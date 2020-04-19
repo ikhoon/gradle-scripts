@@ -21,7 +21,9 @@ def includeWithFlags(CharSequence path, ...flags) {
     def pathStr = path.toString()
     def actualFlags = addFlags(new LinkedHashSet(), flags)
 
-    settings.include pathStr
+    if (pathStr != 'root') {
+        settings.include pathStr
+    }
 
     // Ensure all projects has the extension methods and properties.
     if (!gradle.ext.has('installedFlagsExtension')) {
@@ -42,7 +44,11 @@ def includeWithFlags(CharSequence path, ...flags) {
     // Set the flags property.
     gradle.projectsLoaded {
         try {
-            gradle.rootProject.project(pathStr).ext.flags = actualFlags
+            if (pathStr == 'root') {
+                gradle.rootProject.ext.flags = actualFlags
+            } else {
+                gradle.rootProject.project(pathStr).ext.flags = actualFlags
+            }
         } catch (UnknownProjectException ignored) {
             // Ignore
         }
@@ -146,6 +152,7 @@ static void afterProjectsWithFlags(Project project, Iterable<?> flags, Closure<S
         }
     }
 }
+
 
 // We add a "virtual project", with no source code, to control dependency management using Gradle's platform
 // functionality.
